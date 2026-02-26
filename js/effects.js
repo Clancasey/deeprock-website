@@ -12,7 +12,7 @@ function initEffects() {
   let curCoarseX = 0, curCoarseY = 0;
   let rafGrid = null;
 
-  const MAX_SHIFT = 14;
+  const MAX_SHIFT = 60;
   const LERP = 0.06;
 
   document.addEventListener('mousemove', e => {
@@ -68,30 +68,41 @@ function initEffects() {
     }));
   }
 
+  const FADE_DUR = 2.0;  // seconds to fade in / out
+
   function mkComet() {
-    const angle   = Math.random() * Math.PI * 2;
-    const speed   = Math.random() * 27 + 18;
-    const vx      = Math.cos(angle) * speed;
-    const vy      = Math.sin(angle) * speed;
-    const tailLen = (Math.random() * 0.06 + 0.04) * Math.min(W, H);
-    const pad     = tailLen + 20;
+    const minDim = Math.min(W, H);
+    // Semi-major axis: 20%–70% of screen so some orbits extend off-edge
+    const a     = (Math.random() * 0.50 + 0.20) * minDim;
+    // Low eccentricity: 0.0–0.25
+    const e     = Math.random() * 0.25;
+    const b     = a * Math.sqrt(1 - e * e);
+    // Random ellipse rotation
+    const rot   = Math.random() * Math.PI * 2;
+    // Starting true anomaly
+    const theta = Math.random() * Math.PI * 2;
+    // Angular speed — slower for larger orbits (Kepler-ish)
+    const omega = (Math.random() * 0.06 + 0.01) * (minDim / a);
+    // CW or CCW
+    const dir   = Math.random() < 0.5 ? 1 : -1;
+    const tailLen = (Math.random() * 0.06 + 0.04) * minDim;
 
-    let x, y;
-    if (Math.abs(vx) >= Math.abs(vy)) {
-      x = vx > 0 ? -pad : W + pad;
-      y = Math.random() * H;
-    } else {
-      x = Math.random() * W;
-      y = vy > 0 ? -pad : H + pad;
-    }
-
-    return { x, y, vx, vy, tailLen, life: 0, maxLife: Math.random() * 12 + 10 };
+    return {
+      a, b, e, rot, theta,
+      omega: omega * dir,
+      tailLen,
+      life: 0,
+      maxLife: Math.random() * 10 + 5,  // 5–15 s before despawn
+      trail: [],                          // ring buffer of {x,y}
+      x: 0, y: 0,
+    };
   }
 
   function spawnComets(n) {
     comets = Array.from({ length: n }, () => {
       const c = mkComet();
-      c.life  = Math.random() * c.maxLife;
+      // Stagger initial lifetimes so they don't all spawn/die together
+      c.life = Math.random() * (c.maxLife - FADE_DUR * 2);
       return c;
     });
   }
@@ -112,34 +123,73 @@ function initEffects() {
       ctx.fill();
     });
 
+    const cx = W / 2;
+    const cy = H / 2;
+
     comets.forEach((c, i) => {
       c.life += dt;
-      c.x    += c.vx * dt;
-      c.y    += c.vy * dt;
 
-      const prog = c.life / c.maxLife;
-      const op   = prog < 0.08 ? prog / 0.08
-                 : prog > 0.90 ? (1 - prog) / 0.10
-                 : 1;
+      // Lifecycle opacity: fade in, hold, fade out
+      const remaining = c.maxLife - c.life;
+      const op = c.life < FADE_DUR ? c.life / FADE_DUR
+               : remaining < FADE_DUR ? remaining / FADE_DUR
+               : 1;
 
-      const spd = Math.sqrt(c.vx * c.vx + c.vy * c.vy);
-      const nx  = c.vx / spd;
-      const ny  = c.vy / spd;
-      const tx  = c.x - nx * c.tailLen;
-      const ty  = c.y - ny * c.tailLen;
+      // Respawn when lifetime expires
+      if (c.life >= c.maxLife) {
+        comets[i] = mkComet();
+        return;
+      }
 
-      const grad = ctx.createLinearGradient(c.x, c.y, tx, ty);
-      grad.addColorStop(0,    `rgba(255,230,160,${(op * 0.80).toFixed(3)})`);
-      grad.addColorStop(0.35, `rgba(232,160,32,${(op * 0.35).toFixed(3)})`);
-      grad.addColorStop(1,    `rgba(180,100,10,0)`);
+      // Advance orbital angle
+      c.theta += c.omega * dt;
 
-      ctx.beginPath();
-      ctx.moveTo(c.x, c.y);
-      ctx.lineTo(tx, ty);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth   = 1.2;
-      ctx.stroke();
+      // Position on rotated ellipse centered on screen
+      const cosR = Math.cos(c.rot);
+      const sinR = Math.sin(c.rot);
+      const ex   = c.a * Math.cos(c.theta);
+      const ey   = c.b * Math.sin(c.theta);
+      c.x = cx + ex * cosR - ey * sinR;
+      c.y = cy + ex * sinR + ey * cosR;
 
+      // Record trail point
+      c.trail.push({ x: c.x, y: c.y });
+
+      // Trim trail to tailLen by walking backwards through accumulated distance
+      let dist = 0;
+      let keep = c.trail.length - 1;
+      for (let j = c.trail.length - 1; j > 0; j--) {
+        const dx = c.trail[j].x - c.trail[j - 1].x;
+        const dy = c.trail[j].y - c.trail[j - 1].y;
+        dist += Math.sqrt(dx * dx + dy * dy);
+        if (dist >= c.tailLen) { keep = j; break; }
+        keep = j - 1;
+      }
+      if (keep > 0) c.trail.splice(0, keep);
+
+      // Draw curved tail as segments with tapering opacity and width
+      const len = c.trail.length;
+      if (len >= 2) {
+        for (let j = len - 1; j > 0; j--) {
+          const frac  = (len - 1 - j) / (len - 1);   // 0 at head, 1 at tail
+          const segOp = op * (1 - frac);
+          const width = 1.4 * (1 - frac * 0.7);
+
+          // Color shifts from warm white → gold → amber → transparent
+          const r = Math.round(255 - frac * 75);
+          const g = Math.round(230 - frac * 130);
+          const b = Math.round(160 - frac * 150);
+
+          ctx.beginPath();
+          ctx.moveTo(c.trail[j].x, c.trail[j].y);
+          ctx.lineTo(c.trail[j - 1].x, c.trail[j - 1].y);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${(segOp * 0.8).toFixed(3)})`;
+          ctx.lineWidth   = width;
+          ctx.stroke();
+        }
+      }
+
+      // Head glow
       const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 3.5);
       glow.addColorStop(0, `rgba(255,240,180,${op.toFixed(3)})`);
       glow.addColorStop(1, `rgba(232,160,32,0)`);
@@ -147,11 +197,6 @@ function initEffects() {
       ctx.arc(c.x, c.y, 3.5, 0, Math.PI * 2);
       ctx.fillStyle = glow;
       ctx.fill();
-
-      const pad = c.tailLen + 30;
-      if (c.life >= c.maxLife || c.x < -pad || c.x > W + pad || c.y < -pad || c.y > H + pad) {
-        comets[i] = mkComet();
-      }
     });
 
     requestAnimationFrame(draw);
