@@ -89,6 +89,17 @@
     }
     .nav-logo:hover { color: var(--accent); }
 
+    .nav-linkedin {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .nav-linkedin:hover { color: var(--accent2); }
+
     .nav-label {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -552,6 +563,116 @@
       transform: translateY(0);
     }
 
+    /* ─── BLUF ───────────────────────────────────── */
+    .bluf {
+      margin: 0 0 72px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* faint grid texture */
+    .bluf::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .bluf-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      padding: 18px 28px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bluf-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 3px 8px;
+      line-height: 1;
+    }
+
+    .bluf-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .bluf-steps {
+      padding: 28px 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .bluf-step {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      padding: 10px 0;
+    }
+
+    .bluf-n {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      flex: 0 0 24px;
+      padding-top: 1px;
+    }
+
+    .bluf-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      line-height: 1.5;
+    }
+
+    .bluf-step-final .bluf-text {
+      color: var(--gold);
+    }
+
+    .bluf-aside {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .bluf-connector {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      padding-left: 4px;
+      line-height: 1;
+      opacity: 0.5;
+    }
+
+    .bluf-footer {
+      padding: 14px 28px 18px;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-style: italic;
+    }
+
     /* ─── PROGRESS BAR ───────────────────────────── */
     .progress-bar {
       position: fixed;
@@ -592,13 +713,12 @@
 <!-- ─── HERO ─────────────────────────────────── -->
 <div class="wrapper">
   <div class="hero">
-    <div class="hero-eyebrow">Deep Rock Space Enterprises — Est. 2025</div>
     <h1 class="hero-title">The <em>Master<br>Plan</em></h1>
     <p class="hero-subtitle">A roadmap for building humanity's first<br>true deep space industry.</p>
     <div class="hero-meta">
       <div class="hero-meta-item">
         Author
-        <span>Conor Casey — Founder</span>
+        <span> <a href="https://linkedin.com/in/conor-casey/" class="nav-linkedin" target="_blank">Conor Casey</a> — Founder</span>
       </div>
       <div class="hero-meta-item">
         Published
@@ -612,6 +732,43 @@
     <div class="scroll-hint">
       <div class="scroll-line"></div>
       <span class="scroll-text">Read the plan</span>
+    </div>
+  </div>
+
+  <!-- ─── BLUF ─────────────────────────────────────────── -->
+  <div class="bluf reveal">
+    <div class="bluf-header">
+      <span class="bluf-tag">BLUF</span>
+      <span class="bluf-sub">Bottom Line Up Front — for the impatient</span>
+    </div>
+    <div class="bluf-steps">
+      <div class="bluf-step">
+        <span class="bluf-n">01</span>
+        <span class="bluf-text">Fly to asteroid. <span class="bluf-aside">(the easy part)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step">
+        <span class="bluf-n">02</span>
+        <span class="bluf-text">Extract resources. <span class="bluf-aside">(they're just sitting there)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step">
+        <span class="bluf-n">03</span>
+        <span class="bluf-text">Refine resources. <span class="bluf-aside">(fuel, water, oxygen, metals, etc.)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step">
+        <span class="bluf-n">04</span>
+        <span class="bluf-text">Sell resources. <span class="bluf-aside">(fly to other asteroids & repeat)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step bluf-step-final">
+        <span class="bluf-n">05</span>
+        <span class="bluf-text">Unlock the entire solar system. <span class="bluf-aside">(details below)</span></span>
+      </div>
+    </div>
+    <div class="bluf-footer">
+      The full plan is considerably longer. We recommend reading it.
     </div>
   </div>
 
@@ -692,7 +849,7 @@
     <span class="section-number">03 — The Plan</span>
     <h2>Each stage funds<br>the <em>next one</em>.</h2>
 
-    <p>Deep Rock will not ask investors to fund a 20-year moon shot. Every stage produces something a customer will pay for — now, not someday. Each mission pays for the next while proving the capability the one after it requires.</p>
+    <p>Deep Rock will not ask investors to fund a 20-year moon shot. Every stage produces something a customer will pay for — now, not someday. Each mission helps fund the next while proving the capability the one after it requires.</p>
 
     <div class="stages">
 
@@ -700,7 +857,7 @@
         <div class="stage-num">01</div>
         <div class="stage-content">
           <div class="stage-title">Prospect</div>
-          <div class="stage-tag">Years 1–7 · Revenue: Data Sales</div>
+          <div class="stage-tag">Years 1–5 · Revenue: Data Sales</div>
           <p class="stage-body">Deploy small, capable spacecraft to rendezvous with and characterize near-Earth asteroids. Sell compositional data to NASA, ESA, defense agencies, and planetary science programs. Build a proprietary target catalog — the map of the resource frontier — that no competitor can replicate without years of missions.</p>
         </div>
       </div>
@@ -711,7 +868,7 @@
         <div class="stage-num">02</div>
         <div class="stage-content">
           <div class="stage-title">Extract</div>
-          <div class="stage-tag">Years 7–14 · Revenue: Data + Early Propellant</div>
+          <div class="stage-tag">Years 6–10 · Revenue: Data + Early Propellant</div>
           <p class="stage-body">Demonstrate volatile extraction and the closed-loop ISRU architecture: extract water from asteroid regolith, process it into propellant, use that propellant to reach the next target. The spacecraft arrives nearly empty and departs full — having paid for its own next mission from the asteroid it just left. Each mission costs less than the last.</p>
         </div>
       </div>
@@ -722,7 +879,7 @@
         <div class="stage-num">03</div>
         <div class="stage-content">
           <div class="stage-title">Refuel</div>
-          <div class="stage-tag">Years 14–20 · Revenue: Propellant Sales</div>
+          <div class="stage-tag">Years 11–15 · Revenue: Propellant Sales</div>
           <p class="stage-body">Establish cislunar propellant depot infrastructure supplied by a growing fleet of self-fueling extraction spacecraft. Sell propellant to lunar logistics operators, commercial landers, and deep-space mission operators — eliminating the gravity tax for every customer who uses it. A fleet of 5 vehicles generates $100–200M annually at ~85% gross margins.</p>
         </div>
       </div>
@@ -733,7 +890,7 @@
         <div class="stage-num">04</div>
         <div class="stage-content">
           <div class="stage-title">Build</div>
-          <div class="stage-tag">Years 20+ · Revenue: Propellant + Materials + Licensing</div>
+          <div class="stage-tag">Years 15+ · Revenue: Propellant + Materials + Licensing</div>
           <p class="stage-body">Supply structural materials — iron, nickel, aluminum — to cislunar construction operations building orbital stations, lunar surface infrastructure, and Mars mission support. These metals are worth almost nothing on Earth and thousands of dollars per kilogram in space. The same fleet that produces propellant produces the raw material for a civilization beyond Earth.</p>
         </div>
       </div>
