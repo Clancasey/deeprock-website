@@ -62,7 +62,9 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: center;
+      text-align: center;
       padding: 120px 0 80px;
       position: relative;
     }
@@ -103,21 +105,25 @@
     .hero-meta-item span { display: block; color: var(--text); margin-top: 4px; }
     .scroll-hint {
       position: absolute;
-      bottom: 40px; left: 0;
+      bottom: 40px;
+      transform: translateX(-50%);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       opacity: 0;
       animation: fadeUp 1s 1.4s forwards;
     }
     .scroll-line {
-      width: 40px; height: 1px;
+      width: 1px; height: 60px;
       background: var(--muted);
+      mask-image: linear-gradient(to bottom, transparent, white);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, white);
       animation: scrollPulse 2s 2s infinite;
     }
     @keyframes scrollPulse {
-      0%, 100% { width: 40px; opacity: 0.5; }
-      50%       { width: 60px; opacity: 1;   }
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1;   }
     }
     .scroll-text {
       font-family: 'DM Mono', monospace;
@@ -482,7 +488,7 @@
 <div class="progress-bar" id="progress"></div>
 
 <!-- Reactive grid layers — sit behind starfield -->
-<div class="grid-layer grid-coarse" id="grid-coarse"></div>
+<!-- <div class="grid-layer grid-coarse" id="grid-coarse"></div> -->
 <div class="grid-layer grid-fine"   id="grid-fine"></div>
 <div class="grid-vignette"></div>
 
@@ -498,8 +504,8 @@
 <!-- ─── HERO ─────────────────────────────────── -->
 <div class="wrapper">
   <div class="hero">
-    <h1 class="hero-title">The <em>Master<br>Plan</em></h1>
-    <p class="hero-subtitle">A roadmap for building humanity's first<br>true deep space industry.</p>
+    <h1 class="hero-title">The <em><br>Master Plan</em></h1>
+    <p class="hero-subtitle">The roadmap to unlocking space <em><strong>for all of humanity</strong></em>.</p>
     <div class="hero-meta">
       <div class="hero-meta-item">
         Author
@@ -508,10 +514,6 @@
       <div class="hero-meta-item">
         Published
         <span>February 25, 2026</span>
-      </div>
-      <div class="hero-meta-item">
-        Status
-        <span>Pre-Seed</span>
       </div>
     </div>
     <div class="scroll-hint">
