@@ -1,250 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Rock Space Enterprises</title>
-    
-    <!-- Favicon - will work once you add favicon.ico -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deep Rock Space Enterprises</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet" />
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
+  <style>
+    :root {
+      --bg:      #09090c;
+      --surface: #13131a;
+      --border:  rgba(255,255,255,0.07);
+      --text:    #cccabd;
+      --muted:   #6b6758;
+      --accent:  #e8a020;
+      --accent2: #c4820a;
+      --gold:    #f0c060;
+      --white:   #f4f0e8;
+    }
 
-        /* Animated starfield background */
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 3s infinite ease-in-out;
-        }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+    }
 
-        /* Company logo background - very subtle (will work once you add the PNG) */
-        .logo-background {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60vw;
-            height: 60vh;
-            background-image: url('DeepRockLogo-clear-bg.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            opacity: 0.03;
-            z-index: 2;
-            filter: blur(1px);
-        }
+    /* ─── CANVAS ─────────────────────────────────── */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
 
-        /* Main content */
-        .container {
-            text-align: center;
-            z-index: 10;
-            padding: 2rem;
-            position: relative;
-        }
+    /* ─── NAV ────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 48px;
+    }
 
-        .company-name {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #f5f5f5, #d4d4d8, #a1a1aa, #71717a);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(161, 161, 170, 0.4);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
+    .nav-wordmark {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+    }
 
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 5px rgba(161, 161, 170, 0.4)); }
-            to { filter: drop-shadow(0 0 10px rgba(212, 212, 216, 0.6)); }
-        }
+    .nav-right {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
 
-        .coming-soon {
-            font-size: clamp(1.2rem, 4vw, 2rem);
-            font-weight: 300;
-            letter-spacing: 0.2em;
-            color: #a1a1aa;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
+    /* ─── CENTER STAGE ───────────────────────────── */
+    .stage {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0 clamp(32px, 8vw, 120px);
+    }
 
-        .subtitle {
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            color: #71717a;
-            max-width: 600px;
-            margin: 0 auto 3rem;
-            line-height: 1.6;
-            opacity: 0.8;
-        }
+    /* ─── EYEBROW ────────────────────────────────── */
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeUp 1.2s 0.2s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
 
-        /* Floating asteroids */
-        .particle {
-            position: fixed;
-            background: rgba(217, 161, 6, 0.8);
-            border-radius: 30% 70% 70% 30%;
-            pointer-events: none;
-            box-shadow: 0 0 8px rgba(217, 161, 6, 0.3);
-            animation: asteroidFloat 8s linear infinite;
-        }
+    /* ─── LOGO / NAME ────────────────────────────── */
+    .wordmark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(56px, 9vw, 128px);
+      font-weight: 300;
+      line-height: 0.92;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 1.4s 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
 
-        @keyframes asteroidFloat {
-            0% { 
-                transform: translateY(0px) translateX(0px) rotate(0deg); 
-                opacity: 0; 
-            }
-            10% { opacity: 0.8; }
-            90% { opacity: 0.6; }
-            100% { 
-                transform: translateY(-100vh) translateX(var(--drift)) rotate(360deg); 
-                opacity: 0; 
-            }
-        }
+    .wordmark em {
+      display: block;
+      font-style: italic;
+      color: var(--gold);
+    }
 
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .company-name {
-                letter-spacing: 0.05em;
-            }
-            
-            .coming-soon {
-                letter-spacing: 0.1em;
-            }
-        }
+    /* ─── DIVIDER ────────────────────────────────── */
+    .rule {
+      width: 48px;
+      height: 1px;
+      background: var(--accent);
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeIn 1s 0.9s ease forwards;
+    }
 
-        /* Subtle grid overlay */
-        .grid-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(161, 161, 170, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(161, 161, 170, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 1;
-        }
-    </style>
+    /* ─── TAGLINE ────────────────────────────────── */
+    .tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(20px, 2.8vw, 34px);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp 1.2s 1.0s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    /* ─── THE LINK ───────────────────────────────── */
+    .tagline a {
+      color: var(--white);
+      text-decoration: none;
+      position: relative;
+      transition: color 0.4s ease;
+      white-space: nowrap;
+    }
+
+    /* animated underline: a thin amber line that slides in on hover */
+    .tagline a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .tagline a:hover {
+      color: var(--gold);
+    }
+
+    .tagline a:hover::after {
+      width: 100%;
+    }
+
+    /* subtle permanent indicator so it's always readable as a link */
+    .tagline a .link-dot {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      vertical-align: middle;
+      margin-left: 5px;
+      margin-bottom: 2px;
+      opacity: 0.7;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .tagline a:hover .link-dot {
+      opacity: 1;
+      transform: scale(1.4);
+    }
+
+    /* ─── FOOTER ROW ─────────────────────────────── */
+    .footer-row {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 28px 48px;
+      pointer-events: none;
+    }
+
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      opacity: 0;
+      animation: fadeUp 1s 1.6s ease forwards;
+      pointer-events: all;
+    }
+
+    .footer-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .footer-email {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-email:hover { color: var(--accent); }
+
+    .footer-right {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0;
+      animation: fadeIn 1s 1.8s ease forwards;
+      text-align: right;
+      line-height: 1.8;
+    }
+
+    /* ─── ANIMATIONS ─────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 600px) {
+      nav, .footer-row { padding: 20px 24px; }
+      .stage { padding: 0 24px; }
+      .footer-right { display: none; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Animated starfield -->
-    <div class="stars" id="starfield"></div>
-    
-    <!-- Grid overlay -->
-    <div class="grid-overlay"></div>
-    
-    <!-- Company logo background (will appear once you add the PNG file) -->
-    <div class="logo-background"></div>
-    
-    <!-- Main content -->
-    <div class="container">
-        <h1 class="company-name">DEEP ROCK SPACE ENTERPRISES</h1>
-        <p class="coming-soon">
-            Something extraordinary is on the horizon.
-        </p>
-    </div>
 
-    <script>
-        // Generate random starfield
-        function createStars() {
-            const starfield = document.getElementById('starfield');
-            const starCount = 150;
-            
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                starfield.appendChild(star);
-            }
-        }
+<canvas id="starfield"></canvas>
 
-        // Create floating asteroids
-        function createAsteroid() {
-            const asteroid = document.createElement('div');
-            asteroid.className = 'particle';
-            
-            // Random starting position at bottom
-            asteroid.style.left = Math.random() * 100 + '%';
-            asteroid.style.bottom = '-20px';
-            
-            // Random size between 3-8px for variety
-            const size = Math.random() * 5 + 3;
-            asteroid.style.width = asteroid.style.height = size + 'px';
-            
-            // Random horizontal drift
-            const drift = (Math.random() - 0.5) * 200; // -100px to +100px drift
-            asteroid.style.setProperty('--drift', drift + 'px');
-            
-            // Random animation duration
-            asteroid.style.animationDuration = (Math.random() * 4 + 6) + 's';
-            
-            // Slight shape variation for more realistic asteroids
-            const borderRadius = `${Math.random() * 30 + 20}% ${Math.random() * 30 + 50}% ${Math.random() * 30 + 50}% ${Math.random() * 30 + 20}%`;
-            asteroid.style.borderRadius = borderRadius;
-            
-            document.body.appendChild(asteroid);
+<!-- Nav -->
+<nav>
+  <span class="nav-wordmark">Deep Rock Space Enterprises</span>
+  <span class="nav-right">Est. 2025</span>
+</nav>
 
-            // Remove asteroid after animation
-            setTimeout(() => {
-                if (asteroid.parentNode) {
-                    asteroid.remove();
-                }
-            }, 12000);
-        }
+<!-- Center content -->
+<div class="stage">
+  <h1 class="wordmark">
+    Deep Rock<em>Space Enterprises</em>
+  </h1>
 
-        // Initialize
-        createStars();
-        
-        // Create asteroids periodically
-        setInterval(createAsteroid, 1500);
+  <div class="rule"></div>
 
-        // Add smooth scroll behavior and prevent default scrolling
-        document.addEventListener('wheel', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-    </script>
+  <p class="tagline">
+    <a href="masterplan.html">Something extraordinary<span class="link-dot"></span></a>
+    is on the horizon.
+  </p>
+</div>
+
+<!-- Footer -->
+<div class="footer-row">
+  <div class="footer-left">
+    <span class="footer-label">Contact</span>
+    <a href="mailto:conor@deeprock.space" class="footer-email">conor@deeprock.space</a>
+  </div>
+  <div class="footer-right">
+    deeprock.space<br>
+    <span style="color: var(--surface); user-select:none;">···</span>
+    Pre-Seed · Active
+  </div>
+</div>
+
+<script>
+  // ─── CANVAS: STARS + COMETS ────────────────────
+  // Identical system to masterplan.html — DPR-aware, delta-time driven.
+
+  const canvas = document.getElementById('starfield');
+  const ctx    = canvas.getContext('2d');
+
+  let W, H, DPR;
+  let stars  = [];
+  let comets = [];
+  let lastTs = null;
+
+  function resize() {
+    DPR = window.devicePixelRatio || 1;
+    W   = window.innerWidth;
+    H   = window.innerHeight;
+    canvas.width  = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function mkStars(n) {
+    stars = Array.from({ length: n }, () => ({
+      x:     Math.random() * W,
+      y:     Math.random() * H,
+      r:     Math.random() * 0.9 + 0.2,
+      base:  Math.random() * 0.45 + 0.08,
+      freq:  Math.random() * 0.6 + 0.2,
+      phase: Math.random() * Math.PI * 2,
+    }));
+  }
+
+  function mkComet() {
+    const angle   = Math.random() * Math.PI * 2;
+    const speed   = Math.random() * 27 + 18;
+    const vx      = Math.cos(angle) * speed;
+    const vy      = Math.sin(angle) * speed;
+    const tailLen = (Math.random() * 0.06 + 0.04) * Math.min(W, H);
+    const pad     = tailLen + 20;
+
+    let x, y;
+    if (Math.abs(vx) >= Math.abs(vy)) {
+      x = vx > 0 ? -pad : W + pad;
+      y = Math.random() * H;
+    } else {
+      x = Math.random() * W;
+      y = vy > 0 ? -pad : H + pad;
+    }
+
+    return { x, y, vx, vy, tailLen, life: 0, maxLife: Math.random() * 12 + 10 };
+  }
+
+  function spawnComets(n) {
+    comets = Array.from({ length: n }, () => {
+      const c = mkComet();
+      c.life  = Math.random() * c.maxLife;
+      return c;
+    });
+  }
+
+  function draw(ts) {
+    if (lastTs === null) lastTs = ts;
+    const dt = Math.min((ts - lastTs) / 1000, 0.05);
+    lastTs   = ts;
+    const t  = ts / 1000;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Stars
+    stars.forEach(s => {
+      const alpha = s.base * (0.5 + 0.5 * Math.sin(2 * Math.PI * s.freq * t + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,245,220,${alpha.toFixed(3)})`;
+      ctx.fill();
+    });
+
+    // Comets
+    comets.forEach((c, i) => {
+      c.life += dt;
+      c.x    += c.vx * dt;
+      c.y    += c.vy * dt;
+
+      const prog = c.life / c.maxLife;
+      const op   = prog < 0.08 ? prog / 0.08
+                 : prog > 0.90 ? (1 - prog) / 0.10
+                 : 1;
+
+      const spd = Math.sqrt(c.vx * c.vx + c.vy * c.vy);
+      const nx  = c.vx / spd;
+      const ny  = c.vy / spd;
+      const tx  = c.x - nx * c.tailLen;
+      const ty  = c.y - ny * c.tailLen;
+
+      const grad = ctx.createLinearGradient(c.x, c.y, tx, ty);
+      grad.addColorStop(0,    `rgba(255,230,160,${(op * 0.80).toFixed(3)})`);
+      grad.addColorStop(0.35, `rgba(232,160,32,${(op * 0.35).toFixed(3)})`);
+      grad.addColorStop(1,    `rgba(180,100,10,0)`);
+
+      ctx.beginPath();
+      ctx.moveTo(c.x, c.y);
+      ctx.lineTo(tx, ty);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth   = 1.2;
+      ctx.stroke();
+
+      const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 3.5);
+      glow.addColorStop(0, `rgba(255,240,180,${op.toFixed(3)})`);
+      glow.addColorStop(1, `rgba(232,160,32,0)`);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+
+      const pad = c.tailLen + 30;
+      if (c.life >= c.maxLife || c.x < -pad || c.x > W + pad || c.y < -pad || c.y > H + pad) {
+        comets[i] = mkComet();
+      }
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  mkStars(300);
+  spawnComets(7);
+  requestAnimationFrame(draw);
+
+  window.addEventListener('resize', () => {
+    resize();
+    mkStars(300);
+    spawnComets(7);
+  });
+</script>
 </body>
 </html>
