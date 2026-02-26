@@ -34,11 +34,44 @@
       font-weight: 300;
     }
 
+    /* ─── REACTIVE GRID ──────────────────────────── */
+    .grid-layer {
+      position: fixed;
+      inset: -40px;
+      z-index: 0;
+      pointer-events: none;
+      will-change: transform;
+      transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .grid-fine {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+    .grid-coarse {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 208px 208px;
+    }
+    .grid-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse 80% 80% at 50% 50%,
+        transparent 40%,
+        rgba(9,9,12,0.72) 100%
+      );
+    }
+
     /* ─── CANVAS ─────────────────────────────────── */
     #starfield {
       position: fixed;
       inset: 0;
-      z-index: 0;
+      z-index: 1;
       pointer-events: none;
     }
 
@@ -74,7 +107,7 @@
     .stage {
       position: fixed;
       inset: 0;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -145,7 +178,6 @@
       white-space: nowrap;
     }
 
-    /* animated underline: a thin amber line that slides in on hover */
     .tagline a::after {
       content: '';
       position: absolute;
@@ -157,15 +189,9 @@
       transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
     }
 
-    .tagline a:hover {
-      color: var(--gold);
-    }
+    .tagline a:hover { color: var(--gold); }
+    .tagline a:hover::after { width: 100%; }
 
-    .tagline a:hover::after {
-      width: 100%;
-    }
-
-    /* subtle permanent indicator so it's always readable as a link */
     .tagline a .link-dot {
       display: inline-block;
       width: 4px;
@@ -179,10 +205,7 @@
       transition: opacity 0.3s, transform 0.3s;
     }
 
-    .tagline a:hover .link-dot {
-      opacity: 1;
-      transform: scale(1.4);
-    }
+    .tagline a:hover .link-dot { opacity: 1; transform: scale(1.4); }
 
     /* ─── FOOTER ROW ─────────────────────────────── */
     .footer-row {
@@ -256,6 +279,12 @@
 </head>
 <body>
 
+<!-- Reactive grid layers — behind everything -->
+<div class="grid-layer grid-coarse" id="grid-coarse"></div>
+<div class="grid-layer grid-fine"   id="grid-fine"></div>
+<div class="grid-vignette"></div>
+
+<!-- Starfield canvas — above grids -->
 <canvas id="starfield"></canvas>
 
 <!-- Nav -->
@@ -292,9 +321,41 @@
 </div>
 
 <script>
-  // ─── CANVAS: STARS + COMETS ────────────────────
-  // Identical system to masterplan.html — DPR-aware, delta-time driven.
+  // ─── REACTIVE GRID PARALLAX ────────────────────
+  const gridFine   = document.getElementById('grid-fine');
+  const gridCoarse = document.getElementById('grid-coarse');
 
+  let mouseX = 0, mouseY = 0;
+  let curFineX = 0, curFineY = 0;
+  let curCoarseX = 0, curCoarseY = 0;
+  let rafGrid = null;
+
+  const MAX_SHIFT = 14;
+  const LERP = 0.06;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    if (!rafGrid) rafGrid = requestAnimationFrame(tickGrid);
+  });
+
+  function tickGrid() {
+    rafGrid = null;
+    curFineX   += (mouseX * MAX_SHIFT        - curFineX)   * LERP;
+    curFineY   += (mouseY * MAX_SHIFT        - curFineY)   * LERP;
+    curCoarseX += (mouseX * MAX_SHIFT * 0.4  - curCoarseX) * LERP;
+    curCoarseY += (mouseY * MAX_SHIFT * 0.4  - curCoarseY) * LERP;
+
+    gridFine.style.transform   = `translate(${curFineX.toFixed(2)}px, ${curFineY.toFixed(2)}px)`;
+    gridCoarse.style.transform = `translate(${curCoarseX.toFixed(2)}px, ${curCoarseY.toFixed(2)}px)`;
+
+    const stillMoving =
+      Math.abs(mouseX * MAX_SHIFT - curFineX) > 0.05 ||
+      Math.abs(mouseY * MAX_SHIFT - curFineY) > 0.05;
+    if (stillMoving) rafGrid = requestAnimationFrame(tickGrid);
+  }
+
+  // ─── CANVAS: STARS + COMETS ────────────────────
   const canvas = document.getElementById('starfield');
   const ctx    = canvas.getContext('2d');
 
@@ -361,7 +422,6 @@
 
     ctx.clearRect(0, 0, W, H);
 
-    // Stars
     stars.forEach(s => {
       const alpha = s.base * (0.5 + 0.5 * Math.sin(2 * Math.PI * s.freq * t + s.phase));
       ctx.beginPath();
@@ -370,7 +430,6 @@
       ctx.fill();
     });
 
-    // Comets
     comets.forEach((c, i) => {
       c.life += dt;
       c.x    += c.vx * dt;

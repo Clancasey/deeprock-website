@@ -22,9 +22,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
-
     body {
       background: var(--bg);
       color: var(--text);
@@ -34,7 +32,7 @@
       overflow-x: hidden;
     }
 
-    /* ─── STARFIELD ──────────────────────────────── */
+    /* ─── STARFIELD CANVAS ───────────────────────── */
     #starfield {
       position: fixed;
       inset: 0;
@@ -42,17 +40,45 @@
       pointer-events: none;
     }
 
-    .star {
-      position: absolute;
-      border-radius: 50%;
-      background: #fff;
-      opacity: 0;
-      animation: twinkle var(--d, 4s) var(--delay, 0s) infinite ease-in-out;
+    /* ─── REACTIVE GRID ──────────────────────────── */
+    /* Two layers: fine grid + coarse grid, each shifts at a different
+       parallax rate on mouse move, giving subtle perceived depth.       */
+    .grid-layer {
+      position: fixed;
+      inset: -40px;          /* oversized so edge shift never reveals bg */
+      z-index: 0;
+      pointer-events: none;
+      will-change: transform;
+      transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    @keyframes twinkle {
-      0%, 100% { opacity: 0; }
-      50%       { opacity: var(--op, 0.6); }
+    /* fine grid — moves 1× the parallax amount */
+    .grid-fine {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+
+    /* coarse grid — moves 0.4× (feels further away) */
+    .grid-coarse {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 208px 208px;
+    }
+
+    /* radial vignette that sits above grids, kills the edges */
+    .grid-vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse 80% 80% at 50% 50%,
+        transparent 40%,
+        rgba(9,9,12,0.72) 100%
+      );
     }
 
     /* comets rendered on canvas — no CSS needed */
@@ -77,7 +103,6 @@
       padding: 20px 48px;
       background: linear-gradient(to bottom, rgba(8,10,15,0.95), transparent);
     }
-
     .nav-logo {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
@@ -88,7 +113,6 @@
       transition: color 0.3s;
     }
     .nav-logo:hover { color: var(--accent); }
-
     .nav-linkedin {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
@@ -99,7 +123,6 @@
       transition: color 0.3s;
     }
     .nav-linkedin:hover { color: var(--accent2); }
-
     .nav-label {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -117,18 +140,6 @@
       padding: 120px 0 80px;
       position: relative;
     }
-
-    .hero-eyebrow {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 32px;
-      opacity: 0;
-      animation: fadeUp 1s 0.3s forwards;
-    }
-
     .hero-title {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(52px, 8vw, 96px);
@@ -139,12 +150,7 @@
       opacity: 0;
       animation: fadeUp 1s 0.5s forwards;
     }
-
-    .hero-title em {
-      font-style: italic;
-      color: var(--gold);
-    }
-
+    .hero-title em { font-style: italic; color: var(--gold); }
     .hero-subtitle {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(18px, 2.5vw, 26px);
@@ -155,14 +161,12 @@
       opacity: 0;
       animation: fadeUp 1s 0.7s forwards;
     }
-
     .hero-meta {
       display: flex;
       gap: 40px;
       opacity: 0;
       animation: fadeUp 1s 0.9s forwards;
     }
-
     .hero-meta-item {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -170,36 +174,25 @@
       color: var(--muted);
       text-transform: uppercase;
     }
-
-    .hero-meta-item span {
-      display: block;
-      color: var(--text);
-      margin-top: 4px;
-    }
-
+    .hero-meta-item span { display: block; color: var(--text); margin-top: 4px; }
     .scroll-hint {
       position: absolute;
-      bottom: 40px;
-      left: 0;
+      bottom: 40px; left: 0;
       display: flex;
       align-items: center;
       gap: 12px;
       opacity: 0;
       animation: fadeUp 1s 1.4s forwards;
     }
-
     .scroll-line {
-      width: 40px;
-      height: 1px;
+      width: 40px; height: 1px;
       background: var(--muted);
       animation: scrollPulse 2s 2s infinite;
     }
-
     @keyframes scrollPulse {
       0%, 100% { width: 40px; opacity: 0.5; }
-      50%       { width: 60px; opacity: 1; }
+      50%       { width: 60px; opacity: 1;   }
     }
-
     .scroll-text {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -215,13 +208,7 @@
       gap: 20px;
       margin: 80px 0 60px;
     }
-
-    .divider-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
     .divider-label {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -232,10 +219,7 @@
     }
 
     /* ─── SECTION ────────────────────────────────── */
-    section {
-      padding: 40px 0 20px;
-    }
-
+    section { padding: 40px 0 20px; }
     .section-number {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -244,7 +228,6 @@
       margin-bottom: 20px;
       display: block;
     }
-
     h2 {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(32px, 5vw, 54px);
@@ -253,12 +236,7 @@
       color: var(--white);
       margin-bottom: 32px;
     }
-
-    h2 em {
-      font-style: italic;
-      color: var(--gold);
-    }
-
+    h2 em { font-style: italic; color: var(--gold); }
     h3 {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(22px, 3vw, 30px);
@@ -266,18 +244,13 @@
       color: var(--white);
       margin: 48px 0 16px;
     }
-
     p {
       font-size: 17px;
       line-height: 1.9;
       color: var(--text);
       margin-bottom: 24px;
     }
-
-    p strong {
-      color: var(--white);
-      font-weight: 500;
-    }
+    p strong { color: var(--white); font-weight: 500; }
 
     /* ─── PULL QUOTE ─────────────────────────────── */
     .pull-quote {
@@ -285,7 +258,6 @@
       padding: 4px 0 4px 32px;
       margin: 48px 0;
     }
-
     .pull-quote p {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(22px, 3vw, 32px);
@@ -304,7 +276,6 @@
       padding: 28px 32px;
       margin: 40px 0;
     }
-
     .callout-label {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -313,21 +284,10 @@
       color: var(--gold);
       margin-bottom: 12px;
     }
-
-    .callout p {
-      margin: 0;
-      font-size: 15px;
-      color: var(--text);
-    }
+    .callout p { margin: 0; font-size: 15px; color: var(--text); }
 
     /* ─── STAGE CARDS ────────────────────────────── */
-    .stages {
-      margin: 48px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
+    .stages { margin: 48px 0; display: flex; flex-direction: column; gap: 2px; }
     .stage {
       display: grid;
       grid-template-columns: 48px 1fr;
@@ -339,9 +299,7 @@
       overflow: hidden;
       transition: border-color 0.3s;
     }
-
-    .stage:hover { border-color: rgba(224, 123, 58, 0.3); }
-
+    .stage:hover { border-color: rgba(232,160,32,0.3); }
     .stage::before {
       content: '';
       position: absolute;
@@ -352,7 +310,6 @@
       transition: opacity 0.3s;
     }
     .stage:hover::before { opacity: 1; }
-
     .stage-num {
       display: flex;
       align-items: flex-start;
@@ -363,9 +320,6 @@
       color: var(--accent);
       letter-spacing: 0.1em;
     }
-
-    .stage-content {}
-
     .stage-title {
       font-family: 'Outfit', sans-serif;
       font-size: 13px;
@@ -375,7 +329,6 @@
       color: var(--white);
       margin-bottom: 8px;
     }
-
     .stage-tag {
       display: inline-block;
       font-family: 'DM Mono', monospace;
@@ -383,18 +336,11 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--accent);
-      background: rgba(224,123,58,0.1);
+      background: rgba(232,160,32,0.1);
       padding: 2px 8px;
       margin-bottom: 12px;
     }
-
-    .stage-body {
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--text);
-      margin: 0;
-    }
-
+    .stage-body { font-size: 15px; line-height: 1.7; color: var(--text); margin: 0; }
     .stage-arrow {
       display: flex;
       justify-content: center;
@@ -410,14 +356,12 @@
       gap: 2px;
       margin: 48px 0;
     }
-
     .stat {
       background: var(--surface);
       border: 1px solid var(--border);
       padding: 28px 24px;
       text-align: center;
     }
-
     .stat-value {
       font-family: 'Cormorant Garamond', serif;
       font-size: 42px;
@@ -426,12 +370,7 @@
       line-height: 1;
       margin-bottom: 8px;
     }
-
-    .stat-value em {
-      font-style: normal;
-      color: var(--accent);
-    }
-
+    .stat-value em { font-style: normal; color: var(--accent); }
     .stat-label {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -442,11 +381,7 @@
     }
 
     /* ─── EVIDENCE LIST ──────────────────────────── */
-    .evidence-list {
-      list-style: none;
-      margin: 32px 0;
-    }
-
+    .evidence-list { list-style: none; margin: 32px 0; }
     .evidence-list li {
       display: flex;
       flex-direction: row;
@@ -458,7 +393,6 @@
       line-height: 1.75;
       color: var(--text);
     }
-
     .evidence-list li .arrow {
       flex: 0 0 auto;
       color: var(--accent);
@@ -467,40 +401,14 @@
       line-height: 1;
       margin-top: 4px;
     }
-
-    .evidence-list li .body {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-
-    .evidence-list li strong {
-      color: var(--white);
-      font-weight: 500;
-    }
+    .evidence-list li .body { flex: 1 1 0; min-width: 0; }
+    .evidence-list li strong { color: var(--white); font-weight: 500; }
 
     /* ─── CLOSING ────────────────────────────────── */
-    .closing {
-      padding: 80px 0 120px;
-      text-align: center;
-    }
-
-    .closing h2 {
-      font-size: clamp(36px, 6vw, 72px);
-    }
-
-    .closing p {
-      max-width: 580px;
-      margin: 0 auto 40px;
-      font-size: 18px;
-    }
-
-    .cta-group {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
+    .closing { padding: 80px 0 120px; text-align: center; }
+    .closing h2 { font-size: clamp(36px, 6vw, 72px); }
+    .closing p { max-width: 580px; margin: 0 auto 40px; font-size: 18px; }
+    .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
     .cta-primary {
       display: inline-block;
       padding: 14px 36px;
@@ -515,20 +423,6 @@
     }
     .cta-primary:hover { background: var(--accent2); transform: translateY(-1px); }
 
-    .cta-secondary {
-      display: inline-block;
-      padding: 14px 36px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      text-decoration: none;
-      transition: border-color 0.3s, color 0.3s;
-    }
-    .cta-secondary:hover { border-color: var(--accent); color: var(--accent); }
-
     /* ─── FOOTER ─────────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
@@ -539,7 +433,6 @@
       position: relative;
       z-index: 1;
     }
-
     footer span {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
@@ -552,16 +445,12 @@
       from { opacity: 0; transform: translateY(24px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
     .reveal {
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 0.8s ease, transform 0.8s ease;
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
 
     /* ─── BLUF ───────────────────────────────────── */
     .bluf {
@@ -571,8 +460,6 @@
       position: relative;
       overflow: hidden;
     }
-
-    /* faint grid texture */
     .bluf::before {
       content: '';
       position: absolute;
@@ -583,7 +470,6 @@
       background-size: 32px 32px;
       pointer-events: none;
     }
-
     .bluf-header {
       display: flex;
       align-items: baseline;
@@ -591,7 +477,6 @@
       padding: 18px 28px 16px;
       border-bottom: 1px solid var(--border);
     }
-
     .bluf-tag {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -603,7 +488,6 @@
       padding: 3px 8px;
       line-height: 1;
     }
-
     .bluf-sub {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -611,21 +495,8 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-
-    .bluf-steps {
-      padding: 28px 28px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .bluf-step {
-      display: flex;
-      align-items: baseline;
-      gap: 18px;
-      padding: 10px 0;
-    }
-
+    .bluf-steps { padding: 28px 28px 20px; display: flex; flex-direction: column; gap: 0; }
+    .bluf-step { display: flex; align-items: baseline; gap: 18px; padding: 10px 0; }
     .bluf-n {
       font-family: 'DM Mono', monospace;
       font-size: 10px;
@@ -634,7 +505,6 @@
       flex: 0 0 24px;
       padding-top: 1px;
     }
-
     .bluf-text {
       font-family: 'DM Mono', monospace;
       font-size: 14px;
@@ -642,17 +512,8 @@
       color: var(--white);
       line-height: 1.5;
     }
-
-    .bluf-step-final .bluf-text {
-      color: var(--gold);
-    }
-
-    .bluf-aside {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-    }
-
+    .bluf-step-final .bluf-text { color: var(--gold); }
+    .bluf-aside { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
     .bluf-connector {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
@@ -661,7 +522,6 @@
       line-height: 1;
       opacity: 0.5;
     }
-
     .bluf-footer {
       padding: 14px 28px 18px;
       border-top: 1px solid var(--border);
@@ -699,15 +559,18 @@
 <!-- Progress bar -->
 <div class="progress-bar" id="progress"></div>
 
-<!-- Starfield -->
-<canvas id="starfield"></canvas>
+<!-- Reactive grid layers — sit behind starfield -->
+<div class="grid-layer grid-coarse" id="grid-coarse"></div>
+<div class="grid-layer grid-fine"   id="grid-fine"></div>
+<div class="grid-vignette"></div>
 
-<!-- comets rendered on starfield canvas -->
+<!-- Starfield canvas — sits above grids -->
+<canvas id="starfield"></canvas>
 
 <!-- Nav -->
 <nav>
   <a href="/" class="nav-logo">Deep Rock Space Enterprises</a>
-  <span class="nav-label">The Master Plan</span>
+  <span class="nav-label">Master Plan</span>
 </nav>
 
 <!-- ─── HERO ─────────────────────────────────── -->
@@ -718,7 +581,7 @@
     <div class="hero-meta">
       <div class="hero-meta-item">
         Author
-        <span> <a href="https://linkedin.com/in/conor-casey/" class="nav-linkedin" target="_blank">Conor Casey</a> — Founder</span>
+        <span><a href="https://linkedin.com/in/conor-casey/" class="nav-linkedin" target="_blank">Conor Casey</a> — Founder</span>
       </div>
       <div class="hero-meta-item">
         Published
@@ -804,7 +667,7 @@
         <div class="stat-label">Catalogued<br>Near-Earth Asteroids</div>
       </div>
       <div class="stat reveal">
-        <div class="stat-value">~<em>0</em></div>
+        <div class="stat-value">~<em>1</em></div>
         <div class="stat-label">Commercial<br>Prospecting Missions<br>Ever Flown</div>
       </div>
       <div class="stat reveal">
@@ -825,7 +688,7 @@
     <span class="section-number">02 — Why Now</span>
     <h2>This is not a problem<br>for the <em>next generation</em>.</h2>
 
-    <p>Multiple companies have attempted asteroid mining in the past.  Most have failed — for reasons that are specific, well-understood, and largely no longer apply.</p>
+    <p>Multiple companies have attempted asteroid mining in the past. Most have failed — for reasons that are specific, well-understood, and largely no longer apply.</p>
     <h2>So, <em>why now?</em></h2>
 
     <ul class="evidence-list">
@@ -836,8 +699,7 @@
       <li><span class="arrow">→</span><span class="body"><strong>Spacecraft development costs have fallen dramatically.</strong> A capable deep-space prospector that would have cost $300M in 2005 can be built for $40–70M today using commercial smallsat manufacturing and heritage components.</span></li>
     </ul>
 
-    <p>The window is open. The question is not whether this gets done — it will be done. </p>
-    
+    <p>The window is open. The question is not whether this gets done — it will be done.</p>
     <h2>The question is <em>who builds it first?</em></h2>
   </section>
 
@@ -855,7 +717,6 @@
     <p>Deep Rock will not ask investors to fund a 20-year moon shot. Every stage produces something a customer will pay for — now, not someday. Each mission helps fund the next while proving out capabilities on the route to fully-autonomous large-scale operations.</p>
 
     <div class="stages">
-
       <div class="stage reveal">
         <div class="stage-num">01</div>
         <div class="stage-content">
@@ -864,20 +725,16 @@
           <p class="stage-body">Deploy small, capable spacecraft to rendezvous with and characterize near-Earth asteroids. Sell compositional data to NASA, ESA, defense agencies, and planetary science programs. Build a proprietary target catalog — the map of the resource frontier — that no competitor can replicate without years of missions.</p>
         </div>
       </div>
-
       <div class="stage-arrow reveal">↓</div>
-
       <div class="stage reveal">
         <div class="stage-num">02</div>
         <div class="stage-content">
           <div class="stage-title">Extract</div>
           <div class="stage-tag">Years 6–10 · Revenue: Data + Early Propellant</div>
-          <p class="stage-body">Demonstrate volatile extraction and the closed-loop ISRU architecture: extract water from asteroid regolith, process it into propellant, use that propellant to reach the next target. The spacecraft arrives nearly empty and departs full — having paid for its own next mission from the asteroid it just left.  Residual propellant can be stored or sold. Each mission costs less than the last.  This is where the per-unit economics start turning profitable.</p>
+          <p class="stage-body">Demonstrate volatile extraction and the closed-loop ISRU architecture: extract water from asteroid regolith, process it into propellant, use that propellant to reach the next target. The spacecraft arrives nearly empty and departs full — having paid for its own next mission from the asteroid it just left. Residual propellant can be stored or sold. Each mission costs less than the last. This is where the per-unit economics start turning profitable.</p>
         </div>
       </div>
-
       <div class="stage-arrow reveal">↓</div>
-
       <div class="stage reveal">
         <div class="stage-num">03</div>
         <div class="stage-content">
@@ -886,9 +743,7 @@
           <p class="stage-body">Establish cislunar propellant depot infrastructure supplied by a growing fleet of self-fueling extraction spacecraft. Sell propellant to lunar logistics operators, commercial landers, and deep-space mission operators — eliminating the gravity tax for every customer who uses it. A fleet of 5 vehicles generates $100–200M annually at ~85% gross margins.</p>
         </div>
       </div>
-
       <div class="stage-arrow reveal">↓</div>
-
       <div class="stage reveal">
         <div class="stage-num">04</div>
         <div class="stage-content">
@@ -897,7 +752,6 @@
           <p class="stage-body">Supply structural materials — iron, nickel, aluminum — to cislunar construction operations building orbital stations, lunar surface infrastructure, and Mars mission support. These metals are worth almost nothing on Earth and thousands of dollars per kilogram in space. The same fleet that produces propellant produces the raw material for a civilization beyond Earth.</p>
         </div>
       </div>
-
     </div>
 
     <div class="pull-quote reveal">
@@ -918,7 +772,7 @@
 
     <p>Deep Rock's propellant depot changes what the word "mission" means. Every spacecraft currently in operation is designed around propellant scarcity — every gram optimized, every trajectory constrained, every destination chosen partly because of delta-v budget. Remove propellant scarcity and an entirely new design space opens: ships built for endurance rather than efficiency, stations built for scale rather than minimum viable mass, infrastructure designed to last decades rather than survive a single transit.</p>
 
-    <p>Permanent crewed stations in deep space. Fast direct transit to Mars. Crewed outer planet missions. Large-scale in-space manufacturing. A cislunar economy with the material depth to actually build things — not just visit. All of this is physically possible with existing technology. <b>None of it is feasible without a fuel supply that exists beyond Earth's gravity well.</b></p>
+    <p>Permanent crewed stations in deep space. Fast direct transit to Mars. Crewed outer planet missions. Large-scale in-space manufacturing. A cislunar economy with the material depth to actually build things — not just visit. All of this is physically possible with existing technology. <strong>None of it is feasible without a fuel supply that exists beyond Earth's gravity well.</strong></p>
 
     <div class="pull-quote">
       <p>The industrial revolution wasn't the steam engine. It was everything the steam engine made possible once energy stopped being scarce.</p>
@@ -938,7 +792,7 @@
 
   <div class="closing reveal">
     <span class="section-number" style="display:block; margin-bottom: 24px;">05 — Join Us</span>
-    <h2>The resources are<br>already out there.  <em>We just need to go get them</em>.</h2>
+    <h2>The resources are already out there.<br><em>We just need to go get them</em>.</h2>
     <p>We are looking for engineers, scientists, mission designers, and investors who understand that the most important infrastructure of the next century will not be built on Earth.</p>
     <p style="color: var(--muted); font-size: 15px; margin-bottom: 48px;">If you are building something that needs fuel beyond Earth's gravity well, or if you want to be part of the team that puts it there — we want to hear from you.</p>
     <div class="cta-group">
@@ -955,59 +809,84 @@
 </footer>
 
 <script>
-  // ─── UNIFIED CANVAS: STARS + COMETS ────────────
-  // Fully DPR-aware + delta-time driven so speed is identical
-  // across all screen sizes, pixel densities, and refresh rates.
+  // ─── REACTIVE GRID PARALLAX ────────────────────
+  // Fine grid moves at full rate; coarse grid moves at 40% — creates
+  // perceived depth between two grid planes without any 3D transforms.
+  const gridFine   = document.getElementById('grid-fine');
+  const gridCoarse = document.getElementById('grid-coarse');
 
+  let mouseX = 0, mouseY = 0;
+  let curFineX = 0, curFineY = 0;
+  let curCoarseX = 0, curCoarseY = 0;
+  let rafGrid = null;
+
+  const MAX_SHIFT = 14;   // max px shift at screen edge (fine layer)
+  const LERP = 0.06;      // smoothing — lower = lazier/dreamier
+
+  document.addEventListener('mousemove', e => {
+    // Normalise to -1 … +1
+    mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    if (!rafGrid) rafGrid = requestAnimationFrame(tickGrid);
+  });
+
+  function tickGrid() {
+    rafGrid = null;
+    // Lerp toward target
+    curFineX   += (mouseX * MAX_SHIFT        - curFineX)   * LERP;
+    curFineY   += (mouseY * MAX_SHIFT        - curFineY)   * LERP;
+    curCoarseX += (mouseX * MAX_SHIFT * 0.4  - curCoarseX) * LERP;
+    curCoarseY += (mouseY * MAX_SHIFT * 0.4  - curCoarseY) * LERP;
+
+    gridFine.style.transform   = `translate(${curFineX.toFixed(2)}px, ${curFineY.toFixed(2)}px)`;
+    gridCoarse.style.transform = `translate(${curCoarseX.toFixed(2)}px, ${curCoarseY.toFixed(2)}px)`;
+
+    // Keep animating while there's still motion to settle
+    const stillMoving =
+      Math.abs(mouseX * MAX_SHIFT - curFineX) > 0.05 ||
+      Math.abs(mouseY * MAX_SHIFT - curFineY) > 0.05;
+    if (stillMoving) rafGrid = requestAnimationFrame(tickGrid);
+  }
+
+  // ─── STARS + COMETS CANVAS ─────────────────────
+  // DPR-aware, delta-time driven — identical to previous versions.
   const canvas = document.getElementById('starfield');
   const ctx    = canvas.getContext('2d');
 
-  let W, H, DPR;           // logical dimensions + device pixel ratio
+  let W, H, DPR;
   let stars  = [];
   let comets = [];
-  let lastTs = null;        // for delta-time
+  let lastTs = null;
 
-  // ── Resize: logical px, DPR-scaled backing store ──────────────
   function resize() {
     DPR = window.devicePixelRatio || 1;
     W   = window.innerWidth;
     H   = window.innerHeight;
-    // physical pixels on the backing store
     canvas.width  = Math.round(W * DPR);
     canvas.height = Math.round(H * DPR);
-    // CSS size stays at logical pixels
     canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
-    // scale all draw calls so we always work in logical px
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
 
-  // ── Stars ─────────────────────────────────────────────────────
-  // Positions in logical px. Twinkle is time-based (seconds), DPR-independent.
   function mkStars(n) {
     stars = Array.from({ length: n }, () => ({
-      x:      Math.random() * W,
-      y:      Math.random() * H,
-      r:      Math.random() * 0.9 + 0.2,     // logical px radius
-      base:   Math.random() * 0.45 + 0.08,
-      freq:   Math.random() * 0.6 + 0.2,     // cycles per second
-      phase:  Math.random() * Math.PI * 2,
+      x:     Math.random() * W,
+      y:     Math.random() * H,
+      r:     Math.random() * 0.9 + 0.2,
+      base:  Math.random() * 0.45 + 0.08,
+      freq:  Math.random() * 0.6 + 0.2,
+      phase: Math.random() * Math.PI * 2,
     }));
   }
 
-  // ── Comets ────────────────────────────────────────────────────
-  // Speed is in logical px / second — completely frame-rate & DPR independent.
-  // Tail is drawn opposite the velocity vector.
   function mkComet() {
     const angle   = Math.random() * Math.PI * 2;
-    // 18–45 logical px per second — slow, ambient, never distracting
     const speed   = Math.random() * 27 + 18;
     const vx      = Math.cos(angle) * speed;
     const vy      = Math.sin(angle) * speed;
-    // tail length scales mildly with the smaller screen dimension
     const tailLen = (Math.random() * 0.06 + 0.04) * Math.min(W, H);
     const pad     = tailLen + 20;
-
     let x, y;
     if (Math.abs(vx) >= Math.abs(vy)) {
       x = vx > 0 ? -pad : W + pad;
@@ -1016,33 +895,25 @@
       x = Math.random() * W;
       y = vy > 0 ? -pad : H + pad;
     }
-
-    return {
-      x, y, vx, vy, tailLen,
-      // lifetime in seconds — long enough for a slow full crossing
-      life:    0,
-      maxLife: Math.random() * 12 + 10,
-    };
+    return { x, y, vx, vy, tailLen, life: 0, maxLife: Math.random() * 12 + 10 };
   }
 
   function spawnComets(n) {
     comets = Array.from({ length: n }, () => {
       const c = mkComet();
-      c.life  = Math.random() * c.maxLife;   // stagger on first load
+      c.life  = Math.random() * c.maxLife;
       return c;
     });
   }
 
-  // ── Draw loop ─────────────────────────────────────────────────
   function draw(ts) {
     if (lastTs === null) lastTs = ts;
-    const dt  = Math.min((ts - lastTs) / 1000, 0.05);  // seconds; cap at 50ms
-    lastTs    = ts;
-    const t   = ts / 1000;   // absolute time in seconds for twinkling
+    const dt = Math.min((ts - lastTs) / 1000, 0.05);
+    lastTs   = ts;
+    const t  = ts / 1000;
 
     ctx.clearRect(0, 0, W, H);
 
-    // Stars
     stars.forEach(s => {
       const alpha = s.base * (0.5 + 0.5 * Math.sin(2 * Math.PI * s.freq * t + s.phase));
       ctx.beginPath();
@@ -1051,16 +922,14 @@
       ctx.fill();
     });
 
-    // Comets
     comets.forEach((c, i) => {
       c.life += dt;
       c.x    += c.vx * dt;
       c.y    += c.vy * dt;
 
-      // smooth fade in (first 8%) / fade out (last 10%)
       const prog = c.life / c.maxLife;
-      const op   = prog < 0.08  ? prog / 0.08
-                 : prog > 0.90  ? (1 - prog) / 0.10
+      const op   = prog < 0.08 ? prog / 0.08
+                 : prog > 0.90 ? (1 - prog) / 0.10
                  : 1;
 
       const spd = Math.sqrt(c.vx * c.vx + c.vy * c.vy);
@@ -1070,9 +939,9 @@
       const ty  = c.y - ny * c.tailLen;
 
       const grad = ctx.createLinearGradient(c.x, c.y, tx, ty);
-      grad.addColorStop(0,   `rgba(255,230,160,${(op * 0.80).toFixed(3)})`);
-      grad.addColorStop(0.35,`rgba(232,160,32,${(op * 0.35).toFixed(3)})`);
-      grad.addColorStop(1,   `rgba(180,100,10,0)`);
+      grad.addColorStop(0,    `rgba(255,230,160,${(op * 0.80).toFixed(3)})`);
+      grad.addColorStop(0.35, `rgba(232,160,32,${(op * 0.35).toFixed(3)})`);
+      grad.addColorStop(1,    `rgba(180,100,10,0)`);
 
       ctx.beginPath();
       ctx.moveTo(c.x, c.y);
@@ -1081,7 +950,6 @@
       ctx.lineWidth   = 1.2;
       ctx.stroke();
 
-      // head glow
       const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 3.5);
       glow.addColorStop(0, `rgba(255,240,180,${op.toFixed(3)})`);
       glow.addColorStop(1, `rgba(232,160,32,0)`);
@@ -1090,7 +958,6 @@
       ctx.fillStyle = glow;
       ctx.fill();
 
-      // recycle when off-screen or expired
       const pad = c.tailLen + 30;
       if (c.life >= c.maxLife || c.x < -pad || c.x > W + pad || c.y < -pad || c.y > H + pad) {
         comets[i] = mkComet();
@@ -1105,11 +972,7 @@
   spawnComets(7);
   requestAnimationFrame(draw);
 
-  window.addEventListener('resize', () => {
-    resize();
-    mkStars(300);
-    spawnComets(7);
-  });
+  window.addEventListener('resize', () => { resize(); mkStars(300); spawnComets(7); });
 
   // ─── SCROLL REVEAL ─────────────────────────────
   const reveals  = document.querySelectorAll('.reveal');
