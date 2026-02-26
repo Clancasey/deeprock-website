@@ -1,0 +1,100 @@
+/* ─── VARIABLES ─────────────────────────────── */
+:root {
+  --bg:      #09090c;
+  --bg2:     #0e0e12;
+  --surface: #13131a;
+  --border:  rgba(255,255,255,0.07);
+  --text:    #cccabd;
+  --muted:   #6b6758;
+  --accent:  #e8a020;
+  --accent2: #c4820a;
+  --gold:    #f0c060;
+  --white:   #f4f0e8;
+}
+
+/* ─── RESET ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── BASE BODY ────────────────────────────── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 300;
+}
+
+/* ─── REACTIVE GRID ──────────────────────────── */
+.grid-layer {
+  position: fixed;
+  inset: -40px;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.grid-fine {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+.grid-coarse {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 208px 208px;
+}
+.grid-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 80% at 50% 50%,
+    transparent 40%,
+    rgba(9,9,12,0.72) 100%
+  );
+}
+
+/* ─── CANVAS ─────────────────────────────────── */
+#starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ─── NAV ────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 48px;
+}
+.nav-wordmark,
+.nav-logo {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+/* ─── ANIMATIONS ─────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── RESPONSIVE FOUNDATION ──────────────────── */
+@media (max-width: 600px) {
+  nav { padding: 20px 24px; }
+}
