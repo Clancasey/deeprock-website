@@ -563,6 +563,116 @@
       transform: translateY(0);
     }
 
+    /* ─── BLUF ───────────────────────────────────── */
+    .bluf {
+      margin: 0 0 72px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* faint grid texture */
+    .bluf::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .bluf-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      padding: 18px 28px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bluf-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 3px 8px;
+      line-height: 1;
+    }
+
+    .bluf-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .bluf-steps {
+      padding: 28px 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .bluf-step {
+      display: flex;
+      align-items: baseline;
+      gap: 18px;
+      padding: 10px 0;
+    }
+
+    .bluf-n {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      flex: 0 0 24px;
+      padding-top: 1px;
+    }
+
+    .bluf-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      line-height: 1.5;
+    }
+
+    .bluf-step-final .bluf-text {
+      color: var(--gold);
+    }
+
+    .bluf-aside {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .bluf-connector {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      padding-left: 4px;
+      line-height: 1;
+      opacity: 0.5;
+    }
+
+    .bluf-footer {
+      padding: 14px 28px 18px;
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-style: italic;
+    }
+
     /* ─── PROGRESS BAR ───────────────────────────── */
     .progress-bar {
       position: fixed;
@@ -597,7 +707,7 @@
 <!-- Nav -->
 <nav>
   <a href="/" class="nav-logo">Deep Rock Space Enterprises</a>
-  <span class="nav-label">Master Plan</span>
+  <span class="nav-label">The Master Plan</span>
 </nav>
 
 <!-- ─── HERO ─────────────────────────────────── -->
@@ -622,6 +732,43 @@
     <div class="scroll-hint">
       <div class="scroll-line"></div>
       <span class="scroll-text">Read the plan</span>
+    </div>
+  </div>
+
+  <!-- ─── BLUF ─────────────────────────────────────────── -->
+  <div class="bluf reveal">
+    <div class="bluf-header">
+      <span class="bluf-tag">BLUF</span>
+      <span class="bluf-sub">Bottom Line Up Front — for the impatient</span>
+    </div>
+    <div class="bluf-steps">
+      <div class="bluf-step">
+        <span class="bluf-n">01</span>
+        <span class="bluf-text">Fly to asteroid. <span class="bluf-aside">(the easy part)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step">
+        <span class="bluf-n">02</span>
+        <span class="bluf-text">Extract resources. <span class="bluf-aside">(they're just sitting there)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step">
+        <span class="bluf-n">03</span>
+        <span class="bluf-text">Refine resources. <span class="bluf-aside">(fuel, water, oxygen, metals, etc.)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step">
+        <span class="bluf-n">04</span>
+        <span class="bluf-text">Sell resources. <span class="bluf-aside">(fly to other asteroids & repeat)</span></span>
+      </div>
+      <div class="bluf-connector">↓</div>
+      <div class="bluf-step bluf-step-final">
+        <span class="bluf-n">05</span>
+        <span class="bluf-text">Unlock the entire solar system. <span class="bluf-aside">(details below)</span></span>
+      </div>
+    </div>
+    <div class="bluf-footer">
+      The full plan is considerably longer. We recommend reading it.
     </div>
   </div>
 
