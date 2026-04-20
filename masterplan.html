@@ -764,12 +764,14 @@
 
     /* ───── Responsive ───── */
     @media (max-width: 720px) {
-      .nav { padding: 16px 20px; grid-template-columns: 1fr auto; font-size: 9.5px; }
+      .nav { padding: 14px 20px; grid-template-columns: 1fr auto 1fr; font-size: 9.5px; }
+      .nav-left > span { display: none; }
       .nav-right { display: none; }
       .reticle { inset: 56px 24px; }
       .wrapper { padding: 0 24px; }
       .hero { padding: 120px 0 90px; }
-      .hero-meta { flex-direction: column; gap: 20px; text-align: left; }
+      .hero-meta { flex-direction: column; gap: 20px; align-items: center; }
+      .hero-meta-item { text-align: center; }
       .scroll-hint { bottom: 36px; }
       .stat-row { grid-template-columns: 1fr; }
       .stage { padding: 24px 22px 26px; }
@@ -1115,24 +1117,25 @@
   }
 
   function seed() {
-    const n = Math.floor((W * H) / 7200);
+    const n = Math.floor((W * H) / 6000);
     stars = [];
     for (let i = 0; i < n; i++) {
       stars.push({
         x: Math.random() * W,
         y: Math.random() * H,
         r: Math.random() * 1.1 + 0.2,
-        tw: Math.random() * Math.PI * 2,
-        sp: 0.004 + Math.random() * 0.012,
+        phase: Math.random() * Math.PI * 2,
+        freq: 0.2 + Math.random() * 0.6,
         warm: Math.random() < 0.22,
       });
     }
   }
 
-  function draw(t) {
+  function draw(ts) {
+    const t = ts / 1000;
     ctx.clearRect(0, 0, W, H);
     for (const s of stars) {
-      const a = 0.35 + Math.sin(t * s.sp + s.tw) * 0.3;
+      const a = 0.35 + Math.sin(2 * Math.PI * s.freq * t + s.phase) * 0.3;
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fillStyle = s.warm
@@ -1159,7 +1162,8 @@
     if (!ticking) {
       requestAnimationFrame(() => {
         const y = window.scrollY;
-        fine.style.transform = `translate3d(0, ${(-y * 0.08).toFixed(1)}px, 0)`;
+        const shift = ((-y * 0.08) % 52).toFixed(1);
+        fine.style.transform = `translate3d(0, ${shift}px, 0)`;
         ticking = false;
       });
       ticking = true;
