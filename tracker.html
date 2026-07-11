@@ -544,10 +544,14 @@
       .nav { padding: 14px 20px; font-size: 9.5px; }
       .nav-left > span, .nav-right { display: none; }
       .reticle { inset: 56px 20px; }
-      .hud-data { left: 20px; bottom: 88px; }
+      /* Legend swatches are a nice-to-have on desktop but just clutter a
+         phone screen — collapse hud-data to its one summary line so it
+         can't collide with the clock/time-warp block below it. */
+      .hud-data { left: 20px; bottom: 132px; }
+      .legend { display: none; }
       #search-box { left: 20px; right: 20px; top: 64px; width: auto; }
       .hud-scale { display: none; }
-      .hud-time { bottom: 84px; }
+      .hud-time { bottom: 44px; }
       #panel {
         top: auto; bottom: 0; right: 0; left: 0;
         width: 100%; max-height: 46vh;

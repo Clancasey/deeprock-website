@@ -783,32 +783,75 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape') select(-1); });
 /* ============================================================
    Search — fuzzy find + fly-to
    ============================================================ */
-// Frame both Earth (always at screen center — the camera orbits it) and the
-// asteroid: pull back past the asteroid (R = 1.8·D) and swing the camera
-// ~15° off its direction so it sits comfortably off-axis, Earth centered.
+// Solve camera azimuth/elevation (at a fixed distance R) so `worldPos`
+// lands on a specific pixel. Newton's method via finite differences on the
+// real projection math — exact for any aspect ratio. A fixed angular
+// offset (the previous approach) breaks down on portrait phones, where the
+// horizontal FOV is much narrower than the vertical (e.g. ~22° vs 45° on a
+// 375-wide screen), so the same "12° sideways" swing that reads as a
+// gentle 3/4 turn on desktop flew targets clean off the left edge on mobile.
+function solveFrameAngles(worldPos, R, targetPx, targetPy) {
+  const f = _tmp.copy(worldPos).normalize();
+  let theta = Math.atan2(f.x, f.z);
+  let phi = THREE.MathUtils.clamp(Math.acos(THREE.MathUtils.clamp(f.y, -1, 1)), 0.12, Math.PI - 0.12);
+
+  const savedPos = camera.position.clone();
+  const savedQuat = camera.quaternion.clone();
+  const probe = new THREE.Vector3();
+
+  function screenAt(th, ph) {
+    const sp = Math.sin(ph);
+    camera.position.set(R * sp * Math.sin(th), R * Math.cos(ph), R * sp * Math.cos(th));
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    return project(worldPos, probe) ? { x: probe.x, y: probe.y } : null;
+  }
+
+  const EPS = 0.01;
+  for (let iter = 0; iter < 10; iter++) {
+    const p0 = screenAt(theta, phi);
+    if (!p0) break;
+    const fx = p0.x - targetPx, fy = p0.y - targetPy;
+    if (Math.abs(fx) < 0.5 && Math.abs(fy) < 0.5) break;
+    const pT = screenAt(theta + EPS, phi);
+    const pP = screenAt(theta, phi + EPS);
+    if (!pT || !pP) break;
+    const dxdt = (pT.x - p0.x) / EPS, dydt = (pT.y - p0.y) / EPS;
+    const dxdp = (pP.x - p0.x) / EPS, dydp = (pP.y - p0.y) / EPS;
+    const det = dxdt * dydp - dxdp * dydt;
+    if (Math.abs(det) < 1e-6) break;
+    theta += (-fx * dydp + fy * dxdp) / det;
+    phi = THREE.MathUtils.clamp(phi + (fx * dydt - fy * dxdt) / det, 0.06, Math.PI - 0.06);
+  }
+
+  camera.position.copy(savedPos);
+  camera.quaternion.copy(savedQuat);
+  return { theta, phi };
+}
+
+// Frame both Earth (always dead-center — the camera orbits it) and the
+// asteroid: pull back past the asteroid (R = 1.8·D) and place it at a
+// target screen position chosen to clear the detail panel — lower-left on
+// desktop (panel sits top-right), high-and-centered on mobile (panel
+// slides up over the bottom ~46% of the screen).
 function flyToAsteroid(i) {
   const p = asts[i].scenePos;
   const D = p.length();
-  const f = _tmp.copy(p).normalize();
-  const up = Math.abs(f.y) > 0.94 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-  const r = new THREE.Vector3().crossVectors(up, f).normalize();
-  // 12° sideways + a ~12° upward tilt: asteroid sits off-axis in a 3/4
-  // perspective instead of edge-on to the ecliptic (total ~17° separation,
-  // well inside the frustum at R = 1.8·D)
-  const beta = 12 * DEG;
-  const upPerp = new THREE.Vector3().copy(up).addScaledVector(f, -up.dot(f)).normalize();
-  const camDir = f.multiplyScalar(Math.cos(beta)).addScaledVector(r, Math.sin(beta))
-    .addScaledVector(upPerp, 0.21).normalize();
-  const tTheta = Math.atan2(camDir.x, camDir.z);
+  const R = Math.max(D * 1.8, ctrl.minR + 2);
+  const mobile = matchMedia('(max-width: 720px)').matches;
+  const targetFx = mobile ? 0.5 : 0.35;
+  const targetFy = mobile ? 0.34 : 0.74;
+  const { theta: tTheta, phi } = solveFrameAngles(p, R, targetFx * innerWidth, targetFy * innerHeight);
+
   // shortest-path azimuth (theta is unbounded; don't unwind whole turns)
   let dt = (tTheta - ctrl.theta) % (Math.PI * 2);
   if (dt > Math.PI) dt -= Math.PI * 2;
   if (dt < -Math.PI) dt += Math.PI * 2;
   ctrl.tTheta = ctrl.theta + dt;
-  ctrl.tPhi = THREE.MathUtils.clamp(Math.acos(THREE.MathUtils.clamp(camDir.y, -1, 1)), 0.05, Math.PI - 0.05);
+  ctrl.tPhi = phi;
   // may exceed the wheel-zoom max for the farthest objects — that's fine,
   // the next manual zoom clamps back
-  ctrl.tRadius = Math.max(D * 1.8, ctrl.minR + 2);
+  ctrl.tRadius = R;
   ctrl.vTheta = ctrl.vPhi = 0;
 }
 
@@ -1285,3 +1328,5 @@ window.__dbg = {
   ctrl, select, canvas, renderer, asts, pointers, mouse, pickAt,
   get hoverIdx() { return hoverIdx; },
 };
+window.__dbg.flyToAsteroid = flyToAsteroid;
+window.__dbg.solveFrameAngles = solveFrameAngles;
