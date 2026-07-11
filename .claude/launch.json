@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "site",
+      "runtimeExecutable": "wsl.exe",
+      "runtimeArgs": ["-e", "python3", "-m", "http.server", "8123", "--directory", "/home/ccasey/Documents/deeprock/deeprock-website"],
+      "port": 8123
+    }
+  ]
+}

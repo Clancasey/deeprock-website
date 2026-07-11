@@ -111,6 +111,13 @@
     .nav-logo { display: inline-flex; align-items: center; gap: 10px; color: var(--white); }
     .nav-logo svg { width: 14px; height: 14px; stroke: var(--accent); }
     .nav-center { color: var(--white); letter-spacing: var(--track-wide); }
+    .nav-link {
+      color: var(--muted); text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 2px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .nav-link:hover { color: var(--accent); border-color: var(--accent-dim); }
     .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; box-shadow: 0 0 6px var(--accent); }
 
     /* ───── Reticle (corner crosshairs) ───── */
@@ -463,6 +470,7 @@
     </div>
     <div class="nav-center">Deep Rock Space Enterprises</div>
     <div class="nav-right">
+      <a href="tracker.html" class="nav-link">NEO Tracker</a>
       <span><span class="dot"></span>&nbsp; Operational</span>
       <span>Est. 2025</span>
     </div>
@@ -546,6 +554,9 @@
       <div class="cta-row">
         <a href="masterplan.html" class="link">
           Read the master plan <span class="arrow">→</span>
+        </a>
+        <a href="tracker.html" class="link">
+          Track near-Earth asteroids <span class="arrow">→</span>
         </a>
       </div>
     </div>
