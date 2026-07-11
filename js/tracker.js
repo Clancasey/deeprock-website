@@ -256,12 +256,50 @@ const ctrl = {
   tTheta: 0.9, tPhi: 1.25, tRadius: 95,
   vTheta: 0, vPhi: 0,
   minR: 2.4, maxR: 4.2 * AU,
+  // Vertical projection shift (pixels) — see updateViewOffset(). Lets the
+  // whole scene (Earth included) slide up to clear the mobile detail panel
+  // without touching the orbit itself, so dragging still visibly rotates
+  // the thing it orbits.
+  viewOffsetY: 0, tViewOffsetY: 0,
 };
 function applyCamera() {
   const sp = Math.sin(ctrl.phi), cp = Math.cos(ctrl.phi);
   const st = Math.sin(ctrl.theta), ct = Math.cos(ctrl.theta);
   camera.position.set(ctrl.radius * sp * st, ctrl.radius * cp, ctrl.radius * sp * ct);
   camera.lookAt(0, 0, 0);
+}
+
+// On mobile, the detail panel slides up over the bottom ~46% of the screen —
+// enough to hide Earth, which always sits at dead-center (the camera looks
+// at it from every angle). Rather than move the orbit target (which would
+// make dragging rotate something other than what you're looking at), shift
+// the camera's *projection* vertically so the whole scene — Earth included —
+// slides up into the clear sliver above the panel. The orbit itself, and
+// what it pivots around, never changes; only where it's drawn on screen.
+const MOBILE_MQ = matchMedia('(max-width: 720px)');
+// The view-offset (in pixels) that keeps Earth centered in the sliver above
+// the mobile panel, once it's fully open. Shared by the per-frame smoother
+// and by flyToAsteroid (which needs to solve angles against where things
+// will *end up*, not wherever the projection happens to be mid-transition).
+function targetViewOffsetY() {
+  if (!(MOBILE_MQ.matches && selIdx >= 0)) return 0;
+  const panelTop = panelEl.getBoundingClientRect().top;
+  const topSafe = 150;              // clears nav + search + ledger button
+  const avail = Math.max(panelTop - topSafe, 40);
+  const earthY = topSafe + avail * 0.45;
+  return innerHeight / 2 - earthY;
+}
+function applyViewOffset(offsetY) {
+  if (Math.abs(offsetY) > 0.5) {
+    camera.setViewOffset(innerWidth, innerHeight, 0, offsetY, innerWidth, innerHeight);
+  } else if (camera.view) {
+    camera.clearViewOffset();
+  }
+}
+function updateViewOffset(smooth) {
+  ctrl.tViewOffsetY = targetViewOffsetY();
+  ctrl.viewOffsetY += (ctrl.tViewOffsetY - ctrl.viewOffsetY) * smooth;
+  applyViewOffset(ctrl.viewOffsetY);
 }
 
 /* ============================================================
@@ -838,10 +876,30 @@ function flyToAsteroid(i) {
   const p = asts[i].scenePos;
   const D = p.length();
   const R = Math.max(D * 1.8, ctrl.minR + 2);
-  const mobile = matchMedia('(max-width: 720px)').matches;
-  const targetFx = mobile ? 0.5 : 0.35;
-  const targetFy = mobile ? 0.34 : 0.74;
-  const { theta: tTheta, phi } = solveFrameAngles(p, R, targetFx * innerWidth, targetFy * innerHeight);
+
+  // Solve against the view-offset this selection will settle into (Earth is
+  // about to shift up to clear the mobile panel) — solving against whatever
+  // offset happens to be active right now would target where the asteroid
+  // *used to* land, not where it'll actually render once everything catches
+  // up. Safe to apply directly: the next frame()'s updateViewOffset() call
+  // corrects it back to the live smoothed value before anything is drawn.
+  applyViewOffset(targetViewOffsetY());
+
+  let targetPx, targetPy;
+  if (MOBILE_MQ.matches) {
+    // Frame the asteroid clearly above Earth's new position (which
+    // targetViewOffsetY already centers within the sliver) rather than the
+    // fixed screen fraction used on desktop.
+    const panelTop = panelEl.getBoundingClientRect().top;
+    const topSafe = 150;
+    const avail = Math.max(panelTop - topSafe, 40);
+    targetPx = innerWidth * 0.5;
+    targetPy = topSafe + avail * 0.16;
+  } else {
+    targetPx = innerWidth * 0.35;
+    targetPy = innerHeight * 0.74;
+  }
+  const { theta: tTheta, phi } = solveFrameAngles(p, R, targetPx, targetPy);
 
   // shortest-path azimuth (theta is unbounded; don't unwind whole turns)
   let dt = (tTheta - ctrl.theta) % (Math.PI * 2);
@@ -1178,6 +1236,7 @@ function frame(now) {
   ctrl.phi += (ctrl.tPhi - ctrl.phi) * smooth;
   ctrl.radius += (ctrl.tRadius - ctrl.radius) * (1 - Math.exp(-dt * 5.0));
   applyCamera();
+  updateViewOffset(smooth);
   camera.updateMatrixWorld();
   radiusEl.textContent = fmtRadius(ctrl.radius);
 
